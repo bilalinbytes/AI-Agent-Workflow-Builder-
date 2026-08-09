@@ -22,17 +22,18 @@ export default function LoginPage() {
     e.preventDefault();
     if (isSignUp) {
       const res = await signUpEmailPassword(email, password);
-      if (res.isSuccess && res.session?.user?.id) {
-        const userId = res.session.user.id;
-        // Automatically create an organization for the new user
-        try {
-          await fetch(`${process.env.NEXT_PUBLIC_NHOST_FUNCTIONS_URL || 'http://localhost:3000'}/v1/setupNewUser`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId, orgName: orgName || `${email.split('@')[0]}'s Org` }),
-          });
-        } catch (err) {
-          console.error('Failed to setup org:', err);
+      if (res.isSuccess) {
+        const userId = nhost.auth.getUser()?.id;
+        if (userId) {
+          try {
+            await fetch(`${process.env.NEXT_PUBLIC_NHOST_FUNCTIONS_URL || 'http://localhost:3000'}/v1/setupNewUser`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId, orgName: orgName || `${email.split('@')[0]}'s Org` }),
+            });
+          } catch (err) {
+            console.error('Failed to setup org:', err);
+          }
         }
         router.push('/dashboard');
       }
