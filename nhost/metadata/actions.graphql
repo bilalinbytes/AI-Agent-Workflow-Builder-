@@ -1,0 +1,19 @@
+type Mutation {
+  approveStep(
+    step_run_id: uuid!
+  ): ApproveStepResponse
+  triggerWorkflowRun(
+    workflow_id: uuid!
+  ): TriggerWorkflowRunResponse
+}
+
+type ApproveStepResponse {
+  success: Boolean!
+  message: String!
+}
+
+type TriggerWorkflowRunResponse {
+  success: Boolean!
+  workflow_run_id: uuid!
+  message: String!
+}

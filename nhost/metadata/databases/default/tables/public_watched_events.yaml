@@ -1,0 +1,39 @@
+table:
+  name: watched_events
+  schema: public
+object_relationships:
+  - name: organization
+    using:
+      foreign_key_constraint_on: organization_id
+insert_permissions:
+  - role: owner
+    permission:
+      check:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      columns:
+        - organization_id
+        - payload
+  - role: editor
+    permission:
+      check:
+        organization:
+          members:
+            user_id:
+              _eq: X-Hasura-User-Id
+      columns:
+        - organization_id
+        - payload
+event_triggers:
+  - name: db_event_watcher
+    definition:
+      enable_manual: false
+      insert:
+        columns: "*"
+    retry_conf:
+      num_retries: 0
+      interval_sec: 10
+      timeout_sec: 60
+    webhook: "{{NHOST_FUNCTIONS_URL}}/dbEventWatcher"
