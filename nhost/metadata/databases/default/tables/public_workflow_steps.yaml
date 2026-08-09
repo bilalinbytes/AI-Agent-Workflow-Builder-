@@ -52,15 +52,21 @@ insert_permissions:
   - role: editor
     permission:
       check:
-        workflow:
-          organization:
-            members:
-              user_id:
-                _eq: X-Hasura-User-Id
-              role:
-                _in:
-                  - owner
-                  - editor
+        _and:
+          - workflow:
+              organization:
+                members:
+                  user_id:
+                    _eq: X-Hasura-User-Id
+                  role:
+                    _in:
+                      - owner
+                      - editor
+          - type:
+              _nin:
+                - db_write
+                - notify
+                - webhook_trigger
       columns:
         - workflow_id
         - type
@@ -84,15 +90,21 @@ update_permissions:
   - role: editor
     permission:
       filter:
-        workflow:
-          organization:
-            members:
-              user_id:
-                _eq: X-Hasura-User-Id
-              role:
-                _in:
-                  - owner
-                  - editor
+        _and:
+          - workflow:
+              organization:
+                members:
+                  user_id:
+                    _eq: X-Hasura-User-Id
+                  role:
+                    _in:
+                      - owner
+                      - editor
+          - type:
+              _nin:
+                - db_write
+                - notify
+                - webhook_trigger
       columns:
         - type
         - step_order
