@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useSignInEmailPassword, useSignUpEmailPassword, useNhostClient } from '@nhost/react';
+import { useSignInEmailPassword, useSignUpEmailPassword } from '@nhost/react';
+import { nhost } from '../components/NhostProvider';
 import { useRouter } from 'next/navigation';
 import { LucideWorkflow } from 'lucide-react';
 
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const [orgName, setOrgName] = useState('');
   const { signInEmailPassword, isLoading: isSignInLoading, error: signInError } = useSignInEmailPassword();
   const { signUpEmailPassword, isLoading: isSignUpLoading, error: signUpError } = useSignUpEmailPassword();
-  const nhost = useNhostClient();
+
   const router = useRouter();
 
   const isLoading = isSignInLoading || isSignUpLoading;

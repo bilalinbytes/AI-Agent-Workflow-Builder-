@@ -9,7 +9,7 @@ import { createClient } from 'graphql-ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { ReactNode, useMemo, useEffect, useState } from 'react';
 
-const nhost = new NhostClient({
+export const nhost = new NhostClient({
   subdomain: process.env.NEXT_PUBLIC_NHOST_SUBDOMAIN || 'local',
   region: process.env.NEXT_PUBLIC_NHOST_REGION,
   graphqlUrl: process.env.NEXT_PUBLIC_NHOST_GRAPHQL_URL || 'http://localhost:8080/v1/graphql',
