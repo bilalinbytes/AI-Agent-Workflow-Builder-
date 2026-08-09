@@ -67,7 +67,7 @@ export async function executeSteps(runId: string, orgId: string) {
 
       if (type === 'llm_call') {
         // Stubbed LLM call for now, can be replaced with real Groq/OpenAI call
-        await new Promise(r => setTimeout(r, 2000));
+        await new Promise(r => setTimeout(r, 200));
         output = { response: `Mock LLM response for input: ${JSON.stringify(previousOutput)}`, ...config };
       } 
       else if (type === 'http_request') {
