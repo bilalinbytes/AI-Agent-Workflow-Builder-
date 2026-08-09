@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useSignInEmailPassword, useSignUpEmailPassword } from '@nhost/react';
-import { nhost } from '../components/NhostProvider';
 import { useRouter } from 'next/navigation';
 import { LucideWorkflow } from 'lucide-react';
 
@@ -13,7 +12,6 @@ export default function LoginPage() {
   const [orgName, setOrgName] = useState('');
   const { signInEmailPassword, isLoading: isSignInLoading, error: signInError } = useSignInEmailPassword();
   const { signUpEmailPassword, isLoading: isSignUpLoading, error: signUpError } = useSignUpEmailPassword();
-
   const router = useRouter();
 
   const isLoading = isSignInLoading || isSignUpLoading;
@@ -24,18 +22,7 @@ export default function LoginPage() {
     if (isSignUp) {
       const res = await signUpEmailPassword(email, password);
       if (res.isSuccess) {
-        const userId = nhost.auth.getUser()?.id;
-        if (userId) {
-          try {
-            await fetch(`${process.env.NEXT_PUBLIC_NHOST_FUNCTIONS_URL || 'http://localhost:3000'}/v1/setupNewUser`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ userId, orgName: orgName || `${email.split('@')[0]}'s Org` }),
-            });
-          } catch (err) {
-            console.error('Failed to setup org:', err);
-          }
-        }
+        // PostgreSQL trigger auto-creates org for new user
         router.push('/dashboard');
       }
     } else {
