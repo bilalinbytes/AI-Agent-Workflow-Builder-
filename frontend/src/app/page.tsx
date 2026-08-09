@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useSignInEmailPassword, useSignUpEmailPassword } from '@nhost/react';
+import { useSignInEmailPassword, useSignUpEmailPassword, useNhostClient } from '@nhost/react';
 import { useRouter } from 'next/navigation';
 import { LucideWorkflow } from 'lucide-react';
 
@@ -9,8 +9,10 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [orgName, setOrgName] = useState('');
   const { signInEmailPassword, isLoading: isSignInLoading, error: signInError } = useSignInEmailPassword();
   const { signUpEmailPassword, isLoading: isSignUpLoading, error: signUpError } = useSignUpEmailPassword();
+  const nhost = useNhostClient();
   const router = useRouter();
 
   const isLoading = isSignInLoading || isSignUpLoading;
@@ -20,8 +22,18 @@ export default function LoginPage() {
     e.preventDefault();
     if (isSignUp) {
       const res = await signUpEmailPassword(email, password);
-      if (res.isSuccess) {
-        alert("Sign up successful! You are now logged in.");
+      if (res.isSuccess && res.session?.user?.id) {
+        const userId = res.session.user.id;
+        // Automatically create an organization for the new user
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_NHOST_FUNCTIONS_URL || 'http://localhost:3000'}/v1/setupNewUser`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId, orgName: orgName || `${email.split('@')[0]}'s Org` }),
+          });
+        } catch (err) {
+          console.error('Failed to setup org:', err);
+        }
         router.push('/dashboard');
       }
     } else {
@@ -88,6 +100,24 @@ export default function LoginPage() {
                 />
               </div>
             </div>
+
+            {isSignUp && (
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                  Organization Name
+                </label>
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    value={orgName}
+                    onChange={(e) => setOrgName(e.target.value)}
+                    className="block w-full px-4 py-3 bg-neutral-950/60 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:border-indigo-500/60 focus:ring-2 focus:ring-indigo-550/20 transition-all text-sm font-sans"
+                    placeholder="My Company (optional)"
+                  />
+                </div>
+              </div>
+            )}
+
  
             {error && (
               <div className="text-red-400 text-sm bg-red-950/30 p-3.5 rounded-xl border border-red-900/30 font-sans">
