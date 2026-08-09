@@ -27,18 +27,40 @@ export default async (req: Request, res: Response) => {
   }
 
   try {
-    const { userId, orgName } = req.body;
+    let userId: string;
+    let orgName: string;
+
+    // Handle both: direct call (from frontend) and Hasura Event Trigger payload
+    if (req.body?.event?.data?.new?.id) {
+      // Event Trigger format
+      const newUser = req.body.event.data.new;
+      userId = newUser.id;
+      orgName = `${(newUser.email || 'user').split('@')[0]}'s Org`;
+    } else {
+      // Direct call from frontend
+      userId = req.body?.userId;
+      orgName = req.body?.orgName || 'My Organization';
+    }
 
     if (!userId) {
       return res.status(400).json({ error: 'userId is required' });
     }
 
-    const name = orgName || 'My Organization';
+    // Check if user already has an org (avoid duplicates)
+    const CHECK_EXISTING = `
+      query CheckExisting($userId: uuid!) {
+        org_members(where: {user_id: {_eq: $userId}}) { id }
+      }
+    `;
+    const existing: any = await executeGraphql(CHECK_EXISTING, { userId });
+    if (existing?.org_members?.length > 0) {
+      return res.status(200).json({ success: true, message: 'Already has org' });
+    }
 
     // Step 1: Create the organization
     const orgResult: any = await executeGraphql(CREATE_ORG_AND_MEMBER, {
       userId,
-      orgName: name,
+      orgName,
     });
 
     const orgId = orgResult?.org?.id;
